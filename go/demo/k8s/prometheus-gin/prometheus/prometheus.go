@@ -3,11 +3,9 @@ package prometheus
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
+	prometheus2 "k8s-lx1036/app/k8s/prometheus/client-go/prometheus"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -24,8 +22,8 @@ type Prometheus struct {
 	AppName   string
 	Idc       string
 	WatchPath map[string]struct{}
-	Counter   *prometheus.CounterVec
-	Histogram *prometheus.HistogramVec
+	Counter   *prometheus2.CounterVec
+	//Histogram *prometheus2.HistogramVec
 }
 
 var Metrics *Prometheus
@@ -39,15 +37,15 @@ func Init(options Options) {
 		AppName:   options.AppName,
 		Idc:       options.Idc,
 		WatchPath: options.WatchPath,
-		Counter: prometheus.NewCounterVec(
-			prometheus.CounterOpts{
+		Counter: prometheus2.NewCounterVec(
+			prometheus2.CounterOpts{
 				Name: "module_responses",
 				Help: "calculate qps",
 			},
 			[]string{"app", "module", "api", "method", "code", "idc"},
 		),
-		Histogram: prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
+		/*Histogram: prometheus2.NewHistogramVec(
+			prometheus2.HistogramOpts{
 				Namespace:   "",
 				Subsystem:   "",
 				Name:        "response_duration_milliseconds",
@@ -56,11 +54,11 @@ func Init(options Options) {
 				//Buckets:     options.HistogramBuckets,
 			},
 			[]string{"app", "module", "api", "method", "idc"},
-		),
+		),*/
 	}
 
-	prometheus.MustRegister(Metrics.Counter)
-	prometheus.MustRegister(Metrics.Histogram)
+	prometheus2.MustRegister(Metrics.Counter)
+	//prometheus2.MustRegister(Metrics.Histogram)
 }
 
 type LatencyRecord struct {
@@ -83,13 +81,13 @@ func (metrics *Prometheus) LatencyLog(record LatencyRecord) {
 		record.Module = "self"
 	}
 
-	metrics.Histogram.WithLabelValues(
+	/*metrics.Histogram.WithLabelValues(
 		metrics.AppName,
 		record.Module,
 		record.Api,
 		record.Method,
 		metrics.Idc,
-	).Observe(record.Time)
+	).Observe(record.Time)*/
 }
 
 func (metrics *Prometheus) QpsCounterLog(record QpsRecord) {
@@ -114,20 +112,6 @@ func MetricsServerStart(path string, port int) {
 	}()
 }
 
-func MiddlewareTest() gin.HandlerFunc {
-	log.SetOutput(os.Stdout)
-	log.SetLevel(log.InfoLevel)
-	log.SetFormatter(&log.JSONFormatter{})
-
-	return func(context *gin.Context) {
-		log.Info("afsadfadsfafsadfadsf")
-		times := time.Now()
-		context.Next()
-		latency := float64(time.Since(times).Milliseconds())
-		log.Info(latency)
-	}
-}
-
 func MiddlewarePrometheusAccessLogger() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		times := time.Now()
@@ -136,12 +120,12 @@ func MiddlewarePrometheusAccessLogger() gin.HandlerFunc {
 
 		if _, ok := Metrics.WatchPath[context.Request.URL.Path]; ok {
 			latency := float64(time.Since(times).Milliseconds())
-			Metrics.LatencyLog(LatencyRecord{
+			/*Metrics.LatencyLog(LatencyRecord{
 				Time:   latency,
 				Api:    context.Request.URL.Path,
 				Method: context.Request.Method,
 				Code:   context.Writer.Status(),
-			})
+			})*/
 
 			Metrics.QpsCounterLog(QpsRecord{
 				Api:    context.Request.URL.Path,
