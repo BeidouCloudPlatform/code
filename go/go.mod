@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/360EntSecGroup-Skylar/excelize v1.4.1
 	github.com/astaxie/beego v1.12.0
+	github.com/bep/debounce v1.2.0
 	github.com/caddyserver/caddy v1.0.4
 	github.com/codingsince1985/checksum v1.1.0
 	github.com/coreos/etcd v3.3.17+incompatible
@@ -39,6 +40,7 @@ require (
 	github.com/tidwall/evio v1.0.2
 	github.com/ugorji/go v1.1.7 // indirect
 	github.com/urfave/cli v1.22.1
+	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	golang.org/x/sys v0.0.0-20190904154756-749cb33beabd
 	gopkg.in/go-playground/validator.v8 v8.18.2
 	gopkg.in/h2non/gock.v1 v1.0.15
